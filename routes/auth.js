@@ -1,9 +1,17 @@
 const router = require('express').Router();
 const User = require('../model/user');
 const jwt = require('jsonwebtoken');
+const { TokenExpiredError } = jwt;
 const bcrypt = require('bcryptjs');
 const { registerValidation, loginValidation } = require('../validation');
 
+function createAccessToken(userId){
+    return jwt.sign({userId: userId}, process.env.TOKEN_SECRET, {expiresIn: '10m'});
+}
+
+function createRefreshToken(userId, refreshTokenId){
+    return jwt.sign({userId: userId, tokenId: refreshTokenId}, process.env.TOKEN_SECRET, {expiresIn: '10d'});
+}
 
 //TODO we must sanitize input from user in req
 router.post('/register', async (req, res)=>
@@ -52,9 +60,32 @@ router.post('/login', async (req,res) =>
     if(!validPass) return res.status(400).send('Invalid password!');
 
     //Create and assign a token
-    const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
-    
-    res.header('auth-token', token).status(200).send('Logged in!');
+    const accessToken = createAccessToken(user._id);
+    const refreshToken = createRefreshToken(user._id);
+
+    res.header('auth-token', accessToken).status(200).send({ message : 'Logged in!', refreshToken: refreshToken });
+});
+
+router.post('/refreshToken', async (req, res) => 
+{
+    const refreshToken = req.body.refreshToken;
+    if(!refreshToken) return res.status(403).send('Refresh token is required!');
+
+    //TODO
+    //Check whether refreshToken is in database
+
+    //Check expiration of refreshToken
+    try{
+        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+        console.log("Refresh token user id: ");
+        console.log(verified);
+        
+        const newAccessToken = createAccessToken(verified.userId);
+        return res.status(200).send({ accessToken: newAccessToken, refreshToken: refreshToken})
+    }
+    catch(err){
+        return res.status(403).send("Refresh token was expired!. Please make a new sign in request!");
+    }
 });
 
 module.exports = router;
