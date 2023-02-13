@@ -7,6 +7,7 @@ mongoose.set('strictQuery', false);
 
 //Import Routes
 const authRoute = require('./routes/auth');
+const tutorRoute = require('./routes/tutor')
 
 dotenv.config();
 
@@ -21,7 +22,7 @@ app.use(express.json());
 
 //Routes Middleware
 app.use('/api/user', authRoute);
-
+app.use('/api/tutor', tutorRoute);
 
 app.listen(3000, ()=> console.log("Server Up and running!"));
 
