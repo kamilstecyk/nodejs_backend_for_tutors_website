@@ -76,7 +76,7 @@ router.post('/refreshToken', async (req, res) =>
 
     //Check expiration of refreshToken
     try{
-        const verified = jwt.verify(token, process.env.TOKEN_SECRET);
+        const verified = jwt.verify(refreshToken, process.env.TOKEN_SECRET);
         console.log("Refresh token user id: ");
         console.log(verified);
         

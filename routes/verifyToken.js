@@ -17,8 +17,8 @@ module.exports = function(req,res,next)
         next();
     }
     catch(err){
-        if(err instanceof TokenExpiredError) res.status(401).send({ message: "Unathorized! Access token was expired!" });
+        if(err instanceof TokenExpiredError) return res.status(401).send({ message: "Unathorized! Access token was expired!" });
 
-        res.status(400).send('Invalid Token!');
+        return res.status(400).send('Invalid Token!');
     }
 }
